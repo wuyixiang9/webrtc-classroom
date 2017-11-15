@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>学习端</title>
+  <link rel="stylesheet" href="/assets/study.css">
+</head>
+
+<body>
+  <h1>
+    学习端 - {{ userId }}
+  </h1>
+  {{ onlineUsers }}
+  <div class="board">
+    <fieldset>
+      <legend>local</legend>
+      <div>
+        <video id="local-video" autoplay></video>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>remote</legend>
+      <div>
+        <video id="remote-video" autoplay></video>
+      </div>
+    </fieldset>
+  </div>
+  <button id="call">call</button>
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+  <script src="/assets/study.js"></script>
+</body>
+
+</html>

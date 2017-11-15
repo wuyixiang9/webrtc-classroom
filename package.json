@@ -1,0 +1,26 @@
+{
+  "name": "webrtc-classroom",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wuyixiang9/webrtc-classroom.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wuyixiang9/webrtc-classroom/issues"
+  },
+  "homepage": "https://github.com/wuyixiang9/webrtc-classroom#readme",
+  "dependencies": {
+    "atpl": "^0.9.3",
+    "koa-route": "^3.2.0",
+    "koa-static": "^4.0.1",
+    "koa-views": "^6.1.2",
+    "uuid": "^3.1.0"
+  }
+}
