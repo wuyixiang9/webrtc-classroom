@@ -18,7 +18,11 @@
   "homepage": "https://github.com/wuyixiang9/webrtc-classroom#readme",
   "dependencies": {
     "atpl": "^0.9.3",
-    "koa-route": "^3.2.0",
+    "koa": "^2.4.1",
+    "koa-body": "^2.5.0",
+    "koa-logger": "^3.1.0",
+    "koa-router": "^7.3.0",
+    "koa-sslify": "^2.1.2",
     "koa-static": "^4.0.1",
     "koa-views": "^6.1.2",
     "uuid": "^3.1.0"
