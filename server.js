@@ -24,10 +24,10 @@ app.keys = ['room.limibee.com'];
 app.use(session({
   maxAge: 1000 * 60 * 60 * 8,
   store: {
-    host: 'v7.limibee.com',
+    host: '127.0.0.1',
     port: 6379,
     options: {
-      password: 'limibee.com'
+      // password: 'limibee.com'
     }
   },
 }));
@@ -45,21 +45,12 @@ app.use(async function (ctx, next) {
   await next()
 });
 
-app.use(router.routes())
 app.use(views(__dirname + '/views', {
   map: {
     html: 'atpl'
   }
 }));
-
-app.use(async function (ctx, next) {
-  let userId = ctx.session.uid
-  const view = path.basename(ctx.originalUrl)
-  await ctx.render('study', {
-    userId,
-    onlineUsers: Array.from(onlineUsers)
-  });
-});
+app.use(router.routes())
 
 http.createServer(app.callback()).listen(3000);
 https.createServer({
