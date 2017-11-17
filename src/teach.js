@@ -1,3 +1,5 @@
+require('./styles/teach.css')
+require('webrtc-adapter')
 const localVideo = document.getElementById('local-video')
 const remoteVideo = document.getElementById('remote-video')
 const answer = document.getElementById('answer')

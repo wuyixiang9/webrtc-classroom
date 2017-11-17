@@ -3,17 +3,35 @@ const koaBody = require('koa-body');
 module.exports = function (router) {
   router
     .get('/sdp', function (ctx, next) {
-      const user = ctx.store.get(ctx.query.remoteId)
-      ctx.body = { sdp: user.sdp }
+      const { uid, type } = ctx.request.body
+      if (type) {
+        const sdp = await ctx.app.store.get(`sdp-${uid}-${type}`)
+        ctx.body = {
+          [type]: sdp
+        }
+      } else {
+        const offer = await ctx.app.store.get(`sdp-${uid}-offer`)
+        const answer = await ctx.app.store.get(`sdp-${uid}-answer`)
+        ctx.body = {
+          offer,
+          answer
+        }
+      }
     })
-    .post('/sdp/:type', koaBody(), function (ctx, next) {
-      const userId = ctx.cookies.get('userId')
-      const type = ctx.params.type
-      ctx.store.set(userId, {
-        type,
-        sdp: ctx.request.body.sdp
-      })
-      ctx.body = { status: 'success' }
+    .post('/sdp', koaBody(), async function (ctx, next) {
+      const { type, sdp } = ctx.request.body
+      const { uid } = ctx.session
+      try {
+        await ctx.app.store.set(`sdp-${uid}-${type}`, sdp)
+        ctx.body = {
+          code: 200
+        }
+      } catch (e) {
+        ctx.body = {
+          code: 0,
+          msg: e.message
+        }
+      }
     })
     .get('/view/:file', async function (ctx, next) {
       let userId = ctx.session.uid

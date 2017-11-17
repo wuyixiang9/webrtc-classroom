@@ -1,3 +1,5 @@
+require('./styles/study.css')
+require('webrtc-adapter')
 const $localVideo = document.getElementById('local-video')
 const remoteVideo = document.getElementById('remote-video')
 const $call = document.getElementById('call')
@@ -46,7 +48,7 @@ $call.addEventListener('click', function () {
   pc.onicecandidate = function (evt) {
     if (evt.target.iceGatheringState == "complete") {
       pc.createOffer(function (offer) {
-        sendSDP(offer.type, offer.sdp)
+        sendSDP(offer)
       });
     }
   }
@@ -56,17 +58,15 @@ function getLocalStream (stream) {
   localStream = stream
 }
 
-function sendSDP (type, sdp) {
-  return fetch('/sdp/' + type, {
+function sendSDP (offer) {
+  return fetch('/sdp', {
     method: "POST",
     credentials: "same-origin",
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({
-      sdp
-    })
+    body: JSON.stringify(offer.toJSON())
   })
     .then(res => res.json())
 }

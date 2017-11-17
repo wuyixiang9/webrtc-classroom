@@ -10,10 +10,10 @@ const uuidv4 = require('uuid/v4');
 const Router = require('koa-router');
 const enforceHttps = require('koa-sslify');
 const session = require('koa-session-redis');
+const convert = require('koa-convert')
 
 const routes = require('./routes');
 const store = require('./store');
-
 const router = new Router()
 
 const app = new Koa();
@@ -23,27 +23,36 @@ app.keys = ['room.limibee.com'];
 
 app.use(session({
   maxAge: 1000 * 60 * 60 * 8,
-  store: {
-    host: '127.0.0.1',
-    port: 6379,
-    options: {
-      // password: 'limibee.com'
-    }
-  },
+  store
 }));
-
+app.store = store
 app.use(enforceHttps());
 
 app.use(logger())
-// Must be used before any router is used
-app.use(require('koa-static')('./assets'));
-
 app.use(async function (ctx, next) {
+  // TODO: uid不应该每次都随机
   if (!ctx.session.uid) {
     ctx.session.uid = uuidv4()
   }
   await next()
 });
+if (process.env.NODE_ENV == 'development') {
+  app.use(
+    convert(
+      require('koa-webpack-dev-middleware')(
+        require('webpack')(
+          require('./webpack.config.js')
+        ), {
+          stats: {
+            colors: true
+          },
+          publicPath: "/"
+        })
+    )
+  )
+} else {
+  app.use(require('koa-static')('./assets'));
+}
 
 app.use(views(__dirname + '/views', {
   map: {
@@ -52,8 +61,8 @@ app.use(views(__dirname + '/views', {
 }));
 app.use(router.routes())
 
-http.createServer(app.callback()).listen(3000);
+// http.createServer(app.callback()).listen(process.env.port);
 https.createServer({
   key: fs.readFileSync('server.key'),
   cert: fs.readFileSync('server.crt')
-}, app.callback()).listen(3001);
+}, app.callback()).listen(process.env.PORT);
