@@ -1,5 +1,6 @@
 require('./styles/study.css')
 require('webrtc-adapter')
+const iceDebugger = require('debug')('ice')
 const $localVideo = document.getElementById('local-video')
 const remoteVideo = document.getElementById('remote-video')
 const $call = document.getElementById('call')
@@ -34,7 +35,7 @@ $connect.addEventListener('click', function () {
     })
 })
 $call.addEventListener('click', function () {
-  pc = new RTCPeerConnection(ice);
+  pc = window.localPeerConnection = new RTCPeerConnection(ice);
   pc.addStream(localStream)
   pc.createOffer(function (offer) {
     pc.setLocalDescription(offer);
@@ -43,9 +44,10 @@ $call.addEventListener('click', function () {
     remoteVideo.srcObject = e.streams[0]
   };
   pc.oniceconnectionstatechange = function (evt) {
-    console.log("ICE connection state change: " + evt.target.iceConnectionState);
+    iceDebugger("ICE connection state change: " + evt.target.iceConnectionState);
   }
   pc.onicecandidate = function (evt) {
+    iceDebugger('ICE connection gathering state: ' + evt.target.iceGatheringState)
     if (evt.target.iceGatheringState == "complete") {
       pc.createOffer(function (offer) {
         sendSDP(offer)

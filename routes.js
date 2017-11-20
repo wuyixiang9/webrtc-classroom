@@ -2,7 +2,7 @@ const koaBody = require('koa-body');
 
 module.exports = function (router) {
   router
-    .get('/sdp', function (ctx, next) {
+    .get('/sdp', async function (ctx, next) {
       const { uid, type } = ctx.request.body
       if (type) {
         const sdp = await ctx.app.store.get(`sdp-${uid}-${type}`)

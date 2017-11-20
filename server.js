@@ -65,4 +65,4 @@ app.use(router.routes())
 https.createServer({
   key: fs.readFileSync('server.key'),
   cert: fs.readFileSync('server.crt')
-}, app.callback()).listen(process.env.PORT);
+}, app.callback()).listen(process.env.PORT || 3000);
