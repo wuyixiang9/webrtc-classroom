@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 const Koa = require('koa');
+const socketio = require('socket.io');
 const logger = require('koa-logger')
 const views = require('koa-views');
 const uuidv4 = require('uuid/v4');
@@ -19,6 +20,23 @@ const router = new Router()
 const app = new Koa();
 
 routes(router)
+
+// http.createServer(app.callback()).listen(process.env.port);
+const server = https.createServer({
+  key: fs.readFileSync('server.key'),
+  cert: fs.readFileSync('server.crt')
+}, app.callback())
+
+const io = socketio(server, {
+  pingInterval: 5000
+})
+
+server.listen(process.env.PORT || 3000);
+
+io.on('connection', function (socket) {
+  console.log('a user connected');
+});
+
 app.keys = ['room.limibee.com'];
 
 app.use(session({
@@ -51,7 +69,7 @@ if (process.env.NODE_ENV == 'development') {
     )
   )
 } else {
-  app.use(require('koa-static')('./assets'));
+  app.use(require('koa-static')('.'));
 }
 
 app.use(views(__dirname + '/views', {
@@ -60,9 +78,3 @@ app.use(views(__dirname + '/views', {
   }
 }));
 app.use(router.routes())
-
-// http.createServer(app.callback()).listen(process.env.port);
-https.createServer({
-  key: fs.readFileSync('server.key'),
-  cert: fs.readFileSync('server.crt')
-}, app.callback()).listen(process.env.PORT || 3000);

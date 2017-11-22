@@ -7,6 +7,7 @@ module.exports = {
     'assets/teach': './src/teach.js'
   },
   output: {
+    filename:'[name].js'
   },
   module: {
     rules: [

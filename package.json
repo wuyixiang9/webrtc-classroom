@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "build": "webpack --config webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
     "koa-sslify": "^2.1.2",
     "koa-static": "^4.0.1",
     "koa-views": "^6.1.2",
+    "socket.io": "^2.0.4",
     "uuid": "^3.1.0",
     "webrtc-adapter": "^6.0.2"
   },

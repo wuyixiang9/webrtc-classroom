@@ -1,5 +1,6 @@
 require('./styles/study.css')
 require('webrtc-adapter')
+const io = require('socket.io-client')
 const iceDebugger = require('debug')('ice')
 const $localVideo = document.getElementById('local-video')
 const remoteVideo = document.getElementById('remote-video')
@@ -26,6 +27,8 @@ navigator.mediaDevices.getUserMedia({
   }
 })
   .then(getLocalStream)
+
+const  socket = io('localhost:3000')
 $connect.addEventListener('click', function () {
   getRemoteAnswer($remoteUser.value)
     .then(offer => {
