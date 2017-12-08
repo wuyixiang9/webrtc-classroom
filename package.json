@@ -18,6 +18,17 @@
   },
   "homepage": "https://github.com/wuyixiang9/webrtc-classroom#readme",
   "dependencies": {
+    "@angular/animations": "^5.1.0",
+    "@angular/cdk": "^5.0.0",
+    "@angular/common": "^5.1.0",
+    "@angular/compiler": "^5.1.0",
+    "@angular/core": "^5.1.0",
+    "@angular/forms": "^5.1.0",
+    "@angular/http": "^5.1.0",
+    "@angular/material": "^5.0.0",
+    "@angular/platform-browser": "^5.1.0",
+    "@angular/platform-browser-dynamic": "^5.1.0",
+    "@angular/router": "^5.1.0",
     "atpl": "^0.9.3",
     "debug": "^3.1.0",
     "koa": "^2.4.1",
@@ -31,15 +42,25 @@
     "koa-sslify": "^2.1.2",
     "koa-static": "^4.0.1",
     "koa-views": "^6.1.2",
+    "rx-lite": "^4.0.8",
+    "rxjs": "^5.5.5",
     "socket.io": "^2.0.4",
     "uuid": "^3.1.0",
-    "webrtc-adapter": "^6.0.2"
+    "webrtc-adapter": "^6.0.2",
+    "zone.js": "^0.8.18"
   },
   "devDependencies": {
+    "awesome-typescript-loader": "^3.4.1",
+    "@types/node": "^8.0.57",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-typescript": "^7.0.0-alpha.19",
     "css-loader": "^0.28.7",
     "html-webpack-plugin": "^2.30.1",
     "koa-webpack-dev-middleware": "^2.0.2",
+    "parcel-bundler": "^1.0.3",
     "style-loader": "^0.19.0",
+    "ts-loader": "^3.2.0",
+    "typescript": "^2.6.2",
     "webpack": "^3.8.1"
   }
 }
