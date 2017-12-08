@@ -38,7 +38,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       // chunks: ['vendors', 'assets/main'],
       filename: 'views/index.html',
-      template: './src/views/index.html'
+      template: path.join(__dirname, './src/views/index.html')
     })
   ]
 }

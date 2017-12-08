@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ElementRef } from '@angular/core';
+import { Component, Inject, Output } from '@angular/core';
 
 import { MediaService } from '../services/media'
 
@@ -6,21 +6,22 @@ import { MediaService } from '../services/media'
 @Component({
   selector: 'action-box',
   template: `
-    <button (click)="onClickOpenCamera">Open camera</button>  
+    <button (click)="onClickOpenCamera()" [disabled]="cameraSwitchState()">Open camera</button>  
   `,
+  // providers: [MediaService]
 })
 export default class ActionBoxComponent {
   isOpenCamera = false
 
   constructor(private mediaService: MediaService) { }
 
-  // cameraSwitchState() {
-  //   return this.isOpenCamera
-  // }
+  cameraSwitchState() {
+    return this.isOpenCamera
+  }
 
   onClickOpenCamera() {
     this.mediaService.openCamera()
-      .then(track => {
+      .then(stream => {
         this.isOpenCamera = true
       })
   }

@@ -1,13 +1,21 @@
 import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs/Subject';
 
 @Injectable()
 export class MediaService {
-  openCamera(): Promise<MediaStreamTrack> {
+
+  private cameraMissionSource = new Subject();
+
+  cameraMission$ = this.cameraMissionSource.asObservable();
+
+  openCamera(): Promise<MediaStream> {
     return navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => stream.getTracks()[0])
+      .then(stream => {
+        this.cameraMissionSource.next(stream)
+        return stream
+      })
   }
-  openMicrophone(): Promise<MediaStreamTrack> {
-    return navigator.mediaDevices.getUserMedia({ audio: true })
-    .then(stream => stream.getTracks()[0])
+  closeCamera() {
+
   }
 }

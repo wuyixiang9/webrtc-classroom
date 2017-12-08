@@ -1,21 +1,21 @@
-import { Component, Input, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 
 @Component({
-  selector: 'track-player',
+  selector: 'stream-player',
   template: `
-    <video *ngIf="track" #video autoplay="autoplay"></video>
-    <span *ngIf="!track">no exist track</span>
+    <video *ngIf="stream" #video autoplay="autoplay"></video>
+    <span *ngIf="!stream">no exist stream</span>
   `
 })
-export default class TrackPlayerComponent {
+export default class TrackPlayerComponent implements AfterViewChecked {
 
-  @Input() track: MediaStreamTrack;
+  @Input() stream: MediaStream;
 
   @ViewChild('video') video: ElementRef;
 
-  ngOnChanges() {
-    if (this.track) {
-      this.video.nativeElement.srcObject = this.track
+  ngAfterViewChecked() {
+    if (this.stream) {
+      this.video.nativeElement.srcObject = this.stream
     }
   }
 }

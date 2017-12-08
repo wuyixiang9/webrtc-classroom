@@ -4,7 +4,6 @@ import { NgModule } from '@angular/core';
 import { AppComponent } from './app.component';
 import TrackPlayer from './components/track-player';
 import ActionBox from './components/action-box';
-import { MediaService } from './services/media';
 
 @NgModule({
   declarations: [
@@ -15,7 +14,7 @@ import { MediaService } from './services/media';
   imports: [
     BrowserModule,
   ],
-  providers: [MediaService],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
