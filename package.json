@@ -49,8 +49,9 @@
     "zone.js": "^0.8.18"
   },
   "devDependencies": {
-    "awesome-typescript-loader": "^3.4.1",
     "@types/node": "^8.0.57",
+    "@types/webrtc": "0.0.22",
+    "awesome-typescript-loader": "^3.4.1",
     "babel-preset-env": "^1.6.1",
     "babel-preset-typescript": "^7.0.0-alpha.19",
     "css-loader": "^0.28.7",

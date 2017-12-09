@@ -4,18 +4,24 @@ import { Subject } from 'rxjs/Subject';
 @Injectable()
 export class MediaService {
 
-  private cameraMissionSource = new Subject();
+  private cameraOpenSource = new Subject();
+  private cameraCloseSource = new Subject();
+  private openedStream: MediaStream
 
-  cameraMission$ = this.cameraMissionSource.asObservable();
+  cameraOpenMission$ = this.cameraOpenSource.asObservable();
+  cameraCloseMission$ = this.cameraCloseSource.asObservable();
 
   openCamera(): Promise<MediaStream> {
-    return navigator.mediaDevices.getUserMedia({ video: true })
+    return navigator.mediaDevices.getUserMedia({ video: { width: 640 } })
       .then(stream => {
-        this.cameraMissionSource.next(stream)
+        this.openedStream = stream
+        this.cameraOpenSource.next(stream)
         return stream
       })
   }
-  closeCamera() {
-
+  closeCamera(): Promise<MediaStream> {
+    this.openedStream.getTracks().forEach(track => track.stop())
+    this.cameraCloseSource.next(this.openedStream)
+    return Promise.resolve(this.openedStream)
   }
 }

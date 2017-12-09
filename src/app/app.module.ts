@@ -1,5 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import 'webrtc-adapter'
 
 import { AppComponent } from './app.component';
 import TrackPlayer from './components/track-player';

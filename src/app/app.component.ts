@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs/Subscription';
 
 
 import { MediaService } from './services/media'
+import { SocketService } from './services/socket'
 
 @Component({
   selector: '#root',
@@ -34,22 +35,27 @@ import { MediaService } from './services/media'
       flex:1
     }
   `],
-  providers: [MediaService]
+  providers: [MediaService, SocketService]
 })
 export class AppComponent implements OnDestroy {
   title = 'webrtc classroom';
   localStream = null
   remoteStream = null
 
-  localSubscription: Subscription
+  localOpenSubscription: Subscription
+  localCloseSubscription: Subscription
 
-  constructor(private mediaService: MediaService) {
-    this.localSubscription = this.mediaService.cameraMission$.subscribe(stream => {
+  constructor(private mediaService: MediaService, private socketService: SocketService) {
+    this.localOpenSubscription = this.mediaService.cameraOpenMission$.subscribe(stream => {
       this.localStream = stream
+    })
+    this.localCloseSubscription = this.mediaService.cameraCloseMission$.subscribe(stream => {
+      this.localStream = null
     })
   }
 
   ngOnDestroy() {
-    this.localSubscription.unsubscribe()
+    this.localOpenSubscription.unsubscribe()
+    this.localCloseSubscription.unsubscribe()
   }
 }
