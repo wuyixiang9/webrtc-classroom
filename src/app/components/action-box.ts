@@ -9,6 +9,8 @@ import { SocketService } from '../services/socket'
     <button (click)="onClickOpenCamera()" [disabled]="isOpenCamera">Open camera</button>  
     <button (click)="onClickCloseCamera()" [disabled]="!isOpenCamera">Close camera</button>  
     <button (click)="onClickRequestServer()" [disabled]="">Request</button>
+    <button (click)="onClickRespondOffer()" [disabled]="">Respond</button>
+    <button (click)="onClickReceiveAnwser()" [disabled]="">Receive</button>
   `,
   // providers: [MediaService]
 })
@@ -16,8 +18,6 @@ export default class ActionBoxComponent {
   isOpenCamera = false
 
   localStream: MediaStream
-
-  peerConnection: RTCPeerConnection
 
   constructor(private mediaService: MediaService, private socketService: SocketService) {
 
@@ -43,6 +43,25 @@ export default class ActionBoxComponent {
   }
 
   onClickRequestServer() {
-    this.peerConnection = this.socketService.createICECandidate(this.localStream)
+    this.socketService.createLocalDesc(this.localStream)
+      .then(offer => {
+        this.socketService.sendSDP(offer)
+      })
+  }
+
+  onClickRespondOffer() {
+    const uid = prompt('enter adverse uid')
+    this.socketService.getOffer(uid)
+      .then(({ offer }) => {
+        this.socketService.sendAnwser({ sdp: offer })
+      })
+  }
+
+  onClickReceiveAnwser() {
+    const uid = prompt('enter adverse uid')
+    this.socketService.getAnwser(uid)
+      .then(({ answer }) => {
+        this.socketService.setRemoteDesc(answer)
+      })
   }
 }

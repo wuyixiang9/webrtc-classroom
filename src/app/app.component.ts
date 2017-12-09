@@ -12,13 +12,13 @@ import { SocketService } from './services/socket'
       <h2>{{title}}</h2>
       <div class="board">
         <fieldset>
-          <legend>local</legend>
+          <legend>local {{ownUid}}</legend>
           <div>
             <stream-player [stream]="localStream"></stream-player>
           </div>
         </fieldset>
         <fieldset>
-          <legend>remote</legend>
+          <legend>remote {{adverseUid}}</legend>
           <div>
             <stream-player [stream]="remoteStream"></stream-player>
           </div>
@@ -42,6 +42,9 @@ export class AppComponent implements OnDestroy {
   localStream = null
   remoteStream = null
 
+  ownUid: string
+  adverseUid: string
+
   localOpenSubscription: Subscription
   localCloseSubscription: Subscription
 
@@ -52,6 +55,8 @@ export class AppComponent implements OnDestroy {
     this.localCloseSubscription = this.mediaService.cameraCloseMission$.subscribe(stream => {
       this.localStream = null
     })
+    this.socketService.fetchOwnIdentity()
+      .then(({ uid }) => this.ownUid = uid)
   }
 
   ngOnDestroy() {
