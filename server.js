@@ -4,7 +4,6 @@ const path = require('path');
 const fs = require('fs');
 
 const Koa = require('koa');
-const socketio = require('socket.io');
 const logger = require('koa-logger')
 const views = require('koa-views');
 const uuidv4 = require('uuid/v4');
@@ -27,15 +26,7 @@ const server = https.createServer({
   cert: fs.readFileSync('server.crt')
 }, app.callback())
 
-const io = socketio(server, {
-  pingInterval: 5000
-})
-
-server.listen(process.env.PORT || 3000);
-
-io.on('connection', function (socket) {
-  console.log('a user connected');
-});
+server.listen(process.env.PORT || 3000)
 
 app.keys = ['room.limibee.com'];
 
@@ -54,6 +45,7 @@ app.use(async function (ctx, next) {
   }
   await next()
 });
+
 if (process.env.NODE_ENV == 'development') {
   app.use(
     convert(
@@ -71,10 +63,4 @@ if (process.env.NODE_ENV == 'development') {
 } else {
   app.use(require('koa-static')('.'));
 }
-
-app.use(views(__dirname + '/views', {
-  map: {
-    html: 'atpl'
-  }
-}));
 app.use(router.routes())
