@@ -5,4 +5,5 @@ const redisStore = require('koa-redis')({
     // password: 'limibee.com'
   }
 });
+
 module.exports = redisStore

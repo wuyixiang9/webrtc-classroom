@@ -9,21 +9,33 @@ const socketDebugger = require('debug')('socket')
 @Injectable()
 export class SocketService {
 
-  private socketSource = new Subject();
+  private socketSource: Subject<any> = new Subject();
 
   socketMission$: Observable<any> = this.socketSource.asObservable()
 
   peerConnection: RTCPeerConnection = new RTCPeerConnection(RTCConfigure)
 
   constructor() {
-    this.peerConnection.ontrack = function (e) {
-      console.log(arguments)
-    };
+    this.peerConnection.onicecandidate = e => {
+      if (e.candidate) {
+        console.log('onicecandidate', e.candidate.toJSON())
+        this.saveIceCandidate(e.candidate)
+      }
+    }
+    this.peerConnection.oniceconnectionstatechange = e => {
+      console.log('oniceconnectionstatechange', e)
+    }
+    this.peerConnection.addEventListener('track', e => {
+      console.log('ontrack', e)
+      this.socketSource.next(e['streams'])
+    })
   }
 
-  createLocalDesc(stream: MediaStream): Promise<RTCSessionDescriptionInit> {
+  createOffer(stream: MediaStream): Promise<RTCSessionDescriptionInit> {
     const pc = this.peerConnection
-    pc.addStream(stream)
+    stream.getTracks().forEach(track => {
+      pc.addTrack(track, stream)
+    })
     return pc.createOffer({
       offerToReceiveAudio: 1,
       offerToReceiveVideo: 1
@@ -32,20 +44,31 @@ export class SocketService {
       return desc
     })
   }
-  // TODO 最后一步设定没有成功
+  addIceCandidate(candidate) {
+    return this.peerConnection.addIceCandidate(candidate)
+      .then(() => {
+        console.log('AddIceCandidate success.')
+      })
+      .catch(e => {
+        console.error(e.message)
+        throw e
+      })
+  }
   setRemoteDesc(sdp) {
     return this.peerConnection.setRemoteDescription({ type: 'answer', sdp })
   }
 
-  createAnswer(stream: MediaStream, offer) {
+  createAnswer(stream: MediaStream, sdp) {
     const pc = this.peerConnection
-    pc.setRemoteDescription({ type: 'offer', sdp: offer.sdp })
-    pc.addStream(stream)
-
-    return pc.createAnswer()
+    stream.getTracks().forEach(track => {
+      pc.addTrack(track, stream)
+    })
+    return pc.setRemoteDescription({ type: 'offer', sdp }).then(() => {
+      return pc.createAnswer()
+    })
   }
 
-  sendSDP(desc) {
+  saveOffer(desc) {
     return fetch('/sdp', {
       method: "POST",
       credentials: "same-origin",
@@ -53,12 +76,11 @@ export class SocketService {
         ['Accept', 'application/json'],
         ['Content-Type', 'application/json']
       ],
-      body: JSON.stringify(desc.toJSON())
+      body: JSON.stringify({ type: 'offer', sdp: desc })
     })
       .then(res => res.json())
   }
-  sendAnwser({ type = 'answer', sdp }) {
-    this.peerConnection.setRemoteDescription({ type: 'offer', sdp });
+  saveAnswer(desc) {
     return fetch('/sdp',
       {
         method: "POST",
@@ -67,15 +89,12 @@ export class SocketService {
           ['Accept', 'application/json'],
           ['Content-Type', 'application/json']
         ],
-        body: JSON.stringify({
-          type,
-          sdp
-        })
+        body: JSON.stringify({ type: 'answer', sdp: desc })
       })
       .then(res => res.json())
   }
-  getAnwser(uid) {
-    return fetch('/sdp?uid=' + uid, {
+  getAnswer(uid) {
+    return fetch(`/sdp?uid=${uid}&type=answer`, {
       method: "GET",
       credentials: "same-origin",
       headers: [
@@ -86,7 +105,7 @@ export class SocketService {
       .then(res => res.json())
   }
   getOffer(uid) {
-    return fetch('/sdp?uid=' + uid, {
+    return fetch(`/sdp?uid=${uid}&type=offer`, {
       method: "GET",
       credentials: "same-origin",
       headers: [
@@ -95,6 +114,30 @@ export class SocketService {
       ],
     })
       .then(res => res.json())
+  }
+  saveIceCandidate(candidate: RTCIceCandidate) {
+    return fetch('/candidate', {
+      method: "POST",
+      credentials: "same-origin",
+      headers: [
+        ['Accept', 'application/json'],
+        ['Content-Type', 'application/json']
+      ],
+      body: JSON.stringify({ candidate: candidate.toJSON() })
+    })
+      .then(res => res.json())
+  }
+  getIceCandidate(uid) {
+    return fetch('/candidate?uid=' + uid, {
+      method: "GET",
+      credentials: "same-origin",
+      headers: [
+        ['Accept', 'application/json'],
+        ['Content-Type', 'application/json']
+      ],
+    })
+      .then(res => res.json())
+      .then(body => body.candidates)
   }
   fetchOwnIdentity() {
     return fetch('/uid', {

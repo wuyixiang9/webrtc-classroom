@@ -57,6 +57,9 @@ export class AppComponent implements OnDestroy {
     })
     this.socketService.fetchOwnIdentity()
       .then(({ uid }) => this.ownUid = uid)
+    this.socketService.socketMission$.subscribe(streams => {
+      this.remoteStream = streams[0]
+    })
   }
 
   ngOnDestroy() {

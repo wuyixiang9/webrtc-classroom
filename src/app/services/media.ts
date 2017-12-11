@@ -12,7 +12,7 @@ export class MediaService {
   cameraCloseMission$ = this.cameraCloseSource.asObservable();
 
   openCamera(): Promise<MediaStream> {
-    return navigator.mediaDevices.getUserMedia({ video: { width: 640 } })
+    return navigator.mediaDevices.getUserMedia({ video: { width: 640 }, audio: true })
       .then(stream => {
         this.openedStream = stream
         this.cameraOpenSource.next(stream)

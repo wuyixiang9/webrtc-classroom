@@ -21,9 +21,6 @@ export default class ActionBoxComponent {
 
   constructor(private mediaService: MediaService, private socketService: SocketService) {
 
-    this.socketService.socketMission$.subscribe(offer => {
-      this.socketService.sendSDP(offer)
-    })
   }
 
   onClickOpenCamera() {
@@ -43,25 +40,36 @@ export default class ActionBoxComponent {
   }
 
   onClickRequestServer() {
-    this.socketService.createLocalDesc(this.localStream)
-      .then(offer => {
-        this.socketService.sendSDP(offer)
+    this.socketService.createOffer(this.localStream)
+      .then(({ sdp }) => {
+        this.socketService.saveOffer(sdp)
       })
   }
 
   onClickRespondOffer() {
     const uid = prompt('enter adverse uid')
     this.socketService.getOffer(uid)
-      .then(({ offer }) => {
-        this.socketService.sendAnwser({ sdp: offer })
+      .then(({ sdp }) => {
+        this.socketService.getIceCandidate(uid)
+          .then(candidates => {
+            candidates.map(icecandidate => this.socketService.addIceCandidate(icecandidate))
+          })
+        this.socketService.createAnswer(this.localStream, sdp)
+          .then(desc => {
+            this.socketService.saveAnswer(desc.sdp)
+          })
       })
   }
 
   onClickReceiveAnwser() {
     const uid = prompt('enter adverse uid')
-    this.socketService.getAnwser(uid)
-      .then(({ answer }) => {
-        this.socketService.setRemoteDesc(answer)
+    this.socketService.getAnswer(uid)
+      .then(({ sdp }) => {
+        this.socketService.getIceCandidate(uid)
+          .then(candidates => {
+            candidates.map(icecandidate => this.socketService.addIceCandidate(icecandidate))
+          })
+        this.socketService.setRemoteDesc(sdp)
       })
   }
 }
