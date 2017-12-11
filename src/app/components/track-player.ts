@@ -5,7 +5,14 @@ import { Component, Input, ViewChild, ElementRef, AfterViewChecked } from '@angu
   template: `
     <video *ngIf="stream" #video autoplay="autoplay"></video>
     <span *ngIf="!stream">no exist stream</span>
-  `
+  `,
+  styles:[
+    `
+    video{
+      max-width:100%;
+    }
+    `
+  ]
 })
 export default class TrackPlayerComponent implements AfterViewChecked {
 

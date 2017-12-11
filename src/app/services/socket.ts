@@ -18,7 +18,6 @@ export class SocketService {
   constructor() {
     this.peerConnection.onicecandidate = e => {
       if (e.candidate) {
-        console.log('onicecandidate', e.candidate.toJSON())
         this.saveIceCandidate(e.candidate)
       }
     }
@@ -26,7 +25,6 @@ export class SocketService {
       console.log('oniceconnectionstatechange', e)
     }
     this.peerConnection.addEventListener('track', e => {
-      console.log('ontrack', e)
       this.socketSource.next(e['streams'])
     })
   }
@@ -63,9 +61,12 @@ export class SocketService {
     stream.getTracks().forEach(track => {
       pc.addTrack(track, stream)
     })
-    return pc.setRemoteDescription({ type: 'offer', sdp }).then(() => {
-      return pc.createAnswer()
-    })
+    return pc.setRemoteDescription({ type: 'offer', sdp })
+      .then(() => pc.createAnswer())
+      .then(desc=> {
+        pc.setLocalDescription(desc)
+        return desc
+      })
   }
 
   saveOffer(desc) {

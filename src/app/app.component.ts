@@ -10,6 +10,7 @@ import { SocketService } from './services/socket'
   template: `
     <div class="app">
       <h2>{{title}}</h2>
+      <action-box></action-box>
       <div class="board">
         <fieldset>
           <legend>local {{ownUid}}</legend>
@@ -24,7 +25,6 @@ import { SocketService } from './services/socket'
           </div>
         </fieldset>
       </div>
-      <action-box></action-box>
     </div>
   `,
   styles: [`
