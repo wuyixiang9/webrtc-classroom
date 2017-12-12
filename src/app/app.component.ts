@@ -9,7 +9,6 @@ import { SocketService } from './services/socket'
   selector: '#root',
   template: `
     <div class="app">
-      <h2>{{title}}</h2>
       <action-box></action-box>
       <div class="board">
         <fieldset>
