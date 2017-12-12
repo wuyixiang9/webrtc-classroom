@@ -13,20 +13,29 @@ export class SocketService {
 
   socketMission$: Observable<any> = this.socketSource.asObservable()
 
-  peerConnection: RTCPeerConnection = new RTCPeerConnection(RTCConfigure)
+  peerConnection: RTCPeerConnection
 
   constructor() {
-    this.peerConnection.onicecandidate = e => {
+  }
+
+  createPeerConnection() {
+    const pc = this.peerConnection = new RTCPeerConnection(RTCConfigure)
+    pc.onicecandidate = e => {
       if (e.candidate) {
         this.saveIceCandidate(e.candidate)
       }
     }
-    this.peerConnection.oniceconnectionstatechange = e => {
+    pc.oniceconnectionstatechange = e => {
       console.log('oniceconnectionstatechange', e)
     }
-    this.peerConnection.addEventListener('track', e => {
+    pc.addEventListener('track', e => {
       this.socketSource.next(e['streams'])
     })
+  }
+
+  destoryPeerConnection() {
+    if(this.peerConnection)
+      this.peerConnection.close()
   }
 
   createOffer(stream: MediaStream): Promise<RTCSessionDescriptionInit> {
@@ -63,7 +72,7 @@ export class SocketService {
     })
     return pc.setRemoteDescription({ type: 'offer', sdp })
       .then(() => pc.createAnswer())
-      .then(desc=> {
+      .then(desc => {
         pc.setLocalDescription(desc)
         return desc
       })
@@ -142,6 +151,12 @@ export class SocketService {
   }
   fetchOwnIdentity() {
     return fetch('/uid', {
+      method: "GET",
+      credentials: "same-origin",
+      headers: [
+        ['Accept', 'application/json'],
+        ['Content-Type', 'application/json']
+      ]
     })
       .then(res => res.json())
   }

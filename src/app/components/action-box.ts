@@ -1,4 +1,5 @@
-import { Component, Inject, Output } from '@angular/core';
+import { Component, Inject, Output, OnInit } from '@angular/core';
+import { NgModel } from '@angular/forms'
 
 import { MediaService } from '../services/media'
 import { SocketService } from '../services/socket'
@@ -6,40 +7,70 @@ import { SocketService } from '../services/socket'
 @Component({
   selector: 'action-box',
   template: `
-    <button (click)="onClickOpenCamera()" [disabled]="isOpenCamera">Open camera</button>  
-    <button (click)="onClickCloseCamera()" [disabled]="!isOpenCamera">Close camera</button>  
+    <label>
+      <select [(ngModel)]="selected.camera">
+        <option *ngFor="let device of cameraDevices" [value]="device.deviceId">{{device.label || device.deviceId}}</option>
+      </select>
+    </label>
+    <label>
+      <select [(ngModel)]="selected.microphone">
+        <option *ngFor="let device of microphoneDevices" [value]="device.deviceId">{{device.label || device.deviceId}}</option>
+      </select>
+    </label>
+    <button (click)="onClickOpen()" [disabled]="isOpen">Open</button>  
+    <button (click)="onClickClose()" [disabled]="!isOpen">Close</button>  
     <button (click)="onClickRequestServer()" [disabled]="">Request</button>
     <button (click)="onClickRespondOffer()" [disabled]="">Respond</button>
     <button (click)="onClickReceiveAnwser()" [disabled]="">Receive</button>
   `,
   // providers: [MediaService]
 })
-export default class ActionBoxComponent {
-  isOpenCamera = false
-
+export default class ActionBoxComponent implements OnInit {
+  isOpen = false
+  selected = {
+    camera: undefined,
+    microphone: undefined
+  }
   localStream: MediaStream
+  cameraDevices: MediaDeviceInfo[]
+  microphoneDevices: MediaDeviceInfo[]
 
   constructor(private mediaService: MediaService, private socketService: SocketService) {
 
   }
 
-  onClickOpenCamera() {
-    this.mediaService.openCamera()
-      .then(stream => {
-        this.localStream = stream
-        this.isOpenCamera = true
+  ngOnInit() {
+    this.mediaService.enumerateCameras()
+      .then(devices => {
+        this.cameraDevices = devices
+        this.selected.camera = devices[0]
+      })
+    this.mediaService.enumerateMicrophone()
+      .then(devices => {
+        this.microphoneDevices = devices
+        this.selected.microphone = devices[0]
       })
   }
-
-  onClickCloseCamera() {
-    this.mediaService.closeCamera()
+  onClickOpen() {
+    const [cameraDevice] = this.getDeviceInfoById(this.cameraDevices, this.selected.camera)
+    const [microphoneDevice] = this.getDeviceInfoById(this.microphoneDevices, this.selected.microphone)
+    this.mediaService.open(cameraDevice, microphoneDevice)
       .then(stream => {
+        this.localStream = stream
+        this.isOpen = true
+      })
+  }
+  onClickClose() {
+    this.mediaService.close()
+      .then(stream => {
+        this.socketService.destoryPeerConnection()
         this.localStream = null
-        this.isOpenCamera = false
+        this.isOpen = false
       })
   }
 
   onClickRequestServer() {
+    this.socketService.createPeerConnection()
     this.socketService.createOffer(this.localStream)
       .then(({ sdp }) => {
         this.socketService.saveOffer(sdp)
@@ -47,6 +78,7 @@ export default class ActionBoxComponent {
   }
 
   onClickRespondOffer() {
+    this.socketService.createPeerConnection()
     const uid = prompt('enter adverse uid')
     this.socketService.getOffer(uid)
       .then(({ sdp }) => {
@@ -71,5 +103,9 @@ export default class ActionBoxComponent {
           })
         this.socketService.setRemoteDesc(sdp)
       })
+  }
+
+  getDeviceInfoById(deviceInfos: MediaDeviceInfo[], deviceId: string): MediaDeviceInfo[] {
+    return deviceInfos.filter(device => device.deviceId === deviceId)
   }
 }
