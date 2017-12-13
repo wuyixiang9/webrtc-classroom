@@ -20,6 +20,7 @@ module.exports = function (router) {
       if (type && sdp) {
         try {
           debug(`save ${uid} sdp ,type ${type}`)
+          await ctx.app.store.client.del(`candidate-${uid}`)
           await ctx.app.store.set(`sdp-${uid}-${type}`, sdp)
           ctx.body = {
             code: 200

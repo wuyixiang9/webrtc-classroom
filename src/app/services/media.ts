@@ -23,7 +23,7 @@ export class MediaService {
   open(video: MediaDeviceInfo, audio: MediaDeviceInfo): Promise<MediaStream> {
     return navigator.mediaDevices.getUserMedia({
       video: { width: 640, deviceId: video && video.deviceId },
-      audio: { deviceId: audio && audio.deviceId },
+      // audio: { deviceId: audio && audio.deviceId },
     })
       .then(stream => {
         this.openedStream = stream

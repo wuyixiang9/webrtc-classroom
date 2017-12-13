@@ -20,6 +20,10 @@ import { SocketService } from '../services/socket'
     <button (click)="onClickOpen()" [disabled]="isOpen">Open</button>  
     <button (click)="onClickClose()" [disabled]="!isOpen">Close</button>  
     <button (click)="onClickRequestServer()" [disabled]="">Request</button>
+    <label>
+      <span>Open DataChannel?</span>
+      <input type="checkbox" [(ngModel)]="isOpenDataChannel">
+    </label>
     <button (click)="onClickRespondOffer()" [disabled]="">Respond</button>
     <button (click)="onClickReceiveAnwser()" [disabled]="">Receive</button>
   `,
@@ -27,6 +31,7 @@ import { SocketService } from '../services/socket'
 })
 export default class ActionBoxComponent implements OnInit {
   isOpen = false
+  isOpenDataChannel = true
   selected = {
     camera: undefined,
     microphone: undefined
@@ -71,6 +76,9 @@ export default class ActionBoxComponent implements OnInit {
 
   onClickRequestServer() {
     this.socketService.createPeerConnection()
+    if(this.isOpenDataChannel){
+      this.socketService.createDataChannel()      
+    }
     this.socketService.createOffer(this.localStream)
       .then(({ sdp }) => {
         this.socketService.saveOffer(sdp)

@@ -6,12 +6,14 @@ import 'webrtc-adapter'
 import { AppComponent } from './app.component';
 import TrackPlayer from './components/track-player';
 import ActionBox from './components/action-box';
+import Dialogue from './components/dialogue';
 
 @NgModule({
   declarations: [
     AppComponent,
     TrackPlayer,
-    ActionBox
+    ActionBox,
+    Dialogue
   ],
   imports: [
     BrowserModule,

@@ -23,6 +23,12 @@ import { SocketService } from './services/socket'
             <stream-player [stream]="remoteStream"></stream-player>
           </div>
         </fieldset>
+        <fieldset>
+          <legend>dataChannel</legend>
+          <div>
+            <dialogue></dialogue>
+          </div>
+        </fieldset>
       </div>
     </div>
   `,

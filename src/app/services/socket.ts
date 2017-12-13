@@ -10,31 +10,100 @@ const socketDebugger = require('debug')('socket')
 export class SocketService {
 
   private socketSource: Subject<any> = new Subject();
+  private signalSource: Subject<any> = new Subject();
 
   socketMission$: Observable<any> = this.socketSource.asObservable()
+  signalMission$: Observable<any> = this.signalSource.asObservable()
 
   peerConnection: RTCPeerConnection
+  signalChannel: RTCDataChannel
 
   constructor() {
+
   }
 
   createPeerConnection() {
     const pc = this.peerConnection = new RTCPeerConnection(RTCConfigure)
-    pc.onicecandidate = e => {
+    pc.addEventListener('addstream', e => {
+      console.log('addstream', e)
+    })
+    pc.addEventListener('icecandidate', e => {
+      console.log('icecandidate', e)
+    })
+    pc.addEventListener('iceconnectionstatechange', e => {
+      console.log('iceconnectionstatechange', e)
+    })
+    pc.addEventListener('icegatheringstatechange', e => {
+      console.log('icegatheringstatechange', e)
+    })
+    pc.addEventListener('negotiationneeded', e => {
+      console.log('negotiationneeded', e)
+    })
+    pc.addEventListener('removestream', e => {
+      console.log('removestream', e)
+    })
+    pc.addEventListener('signalingstatechange', e => {
+      console.log('signalingstatechange', e)
+    })
+    pc.addEventListener('datachannel', e => {
+      console.log('datachannel', e)
+      const dc = this.signalChannel = e['channel']
+      dc.addEventListener('close', e => {
+        console.log('dc close', e)
+      })
+      dc.addEventListener('error', e => {
+        console.log('dc error', e)
+      })
+      dc.addEventListener('message', e => {
+        console.log('dc message', e)
+        this.onReceiveMessage(e['data'])        
+      })
+      dc.addEventListener('open', e => {
+        console.log('dc open', e)
+      })
+    })
+    pc.addEventListener('close', e => {
+      console.log('close', e)
+    })
+    pc.addEventListener('error', e => {
+      console.log('error', e)
+    })
+    pc.addEventListener('message', e => {
+      console.log('message', e)
+    })
+    pc.addEventListener('open', e => {
+      console.log('open', e)
+    })
+    pc.addEventListener('tonechange', e => {
+      console.log('tonechange', e)
+    })
+    pc.addEventListener('identityresult', e => {
+      console.log('identityresult', e)
+    })
+    pc.addEventListener('idpassertionerror', e => {
+      console.log('idpassertionerror', e)
+    })
+    pc.addEventListener('idpvalidationerror', e => {
+      console.log('idpvalidationerror', e)
+    })
+    pc.addEventListener('peeridentity', e => {
+      console.log('peeridentity', e)
+    })
+    pc.addEventListener('isolationchange', e => {
+      console.log('isolationchange', e)
+    })
+    pc.addEventListener('icecandidate', e => {
       if (e.candidate) {
         this.saveIceCandidate(e.candidate)
       }
-    }
-    pc.oniceconnectionstatechange = e => {
-      console.log('oniceconnectionstatechange', e)
-    }
+    })
     pc.addEventListener('track', e => {
       this.socketSource.next(e['streams'])
     })
   }
 
   destoryPeerConnection() {
-    if(this.peerConnection)
+    if (this.peerConnection)
       this.peerConnection.close()
   }
 
@@ -78,6 +147,30 @@ export class SocketService {
       })
   }
 
+  createDataChannel() {
+    const pc = this.peerConnection
+    const dc = this.signalChannel = pc.createDataChannel('signal-channel')
+    dc.addEventListener('close', e => {
+      console.log('dc close', e)
+    })
+    dc.addEventListener('error', e => {
+      console.log('dc error', e)
+    })
+    dc.addEventListener('message', e => {
+      console.log('dc message', e)
+      this.onReceiveMessage(e['data'])
+    })
+    dc.addEventListener('open', e => {
+      console.log('dc open', e)
+    })
+  }
+  sendMessage(message: string) {
+    this.signalSource.next({ send: message })
+    this.signalChannel.send(message)
+  }
+  onReceiveMessage(message: string) {
+    this.signalSource.next({ receive: message })
+  }
   saveOffer(desc) {
     return fetch('/sdp', {
       method: "POST",
