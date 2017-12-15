@@ -5,7 +5,7 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var webpackConfig = {
   devtool: 'inline-source-map',
   entry: {
-    'vendor': './src/vendor.ts',
+    'vendor': ['./src/vendor.ts'],
     'main': './src/main.ts'
   },
   output: {
@@ -40,8 +40,15 @@ var webpackConfig = {
       // chunks: ['vendors', 'assets/main'],
       filename: 'views/index.html',
       template: path.join(__dirname, './src/views/index.html')
+    }),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
     })
   ]
+}
+if (process.env.NODE_ENV === 'development') {
+  // webpackConfig.entry.vendor.push('webpack-hot-middleware/client')
+  // webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin())
 }
 if (process.env.NODE_ENV === 'production') {
   webpackConfig.output.path = path.resolve(__dirname, '.')

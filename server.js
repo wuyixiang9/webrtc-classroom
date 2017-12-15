@@ -47,17 +47,17 @@ app.use(async function (ctx, next) {
 });
 
 if (process.env.NODE_ENV == 'development') {
+  const complier = require('webpack')(
+    require('./webpack.config.js')
+  )
   app.use(
     convert(
-      require('koa-webpack-dev-middleware')(
-        require('webpack')(
-          require('./webpack.config.js')
-        ), {
-          stats: {
-            colors: true
-          },
-          publicPath: "/"
-        })
+      require('koa-webpack-dev-middleware')(complier, {
+        stats: {
+          colors: true
+        },
+        publicPath: "/"
+      })
     )
   )
 } else {

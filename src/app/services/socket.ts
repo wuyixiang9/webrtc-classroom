@@ -1,10 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
-
-import RTCConfigure from '../RTCConfigure'
 import { Observable } from 'rxjs/Observable';
 
-const socketDebugger = require('debug')('socket')
+import TraceService from './trace'
+import RTCConfigure from '../RTCConfigure'
 
 @Injectable()
 export class SocketService {
@@ -14,83 +13,90 @@ export class SocketService {
 
   socketMission$: Observable<any> = this.socketSource.asObservable()
   signalMission$: Observable<any> = this.signalSource.asObservable()
+  connectionMission$: Observable<any> = this.signalSource.asObservable()
 
   peerConnection: RTCPeerConnection
   signalChannel: RTCDataChannel
 
-  constructor() {
-
+  constructor(private traceService: TraceService) {
   }
 
   createPeerConnection() {
     const pc = this.peerConnection = new RTCPeerConnection(RTCConfigure)
+    const trace = this.traceService.trace
     pc.addEventListener('addstream', e => {
-      console.log('addstream', e)
+      trace('addstream', 'id' + e['stream'].id)
     })
     pc.addEventListener('icecandidate', e => {
-      console.log('icecandidate', e)
+      const c = e['candidate']
+      if (!c) return
+      const protocol = c['protocol'],
+        ip = c['ip'],
+        port = c['port'],
+        sdpMid = c['sdpMid']
+      trace('icecandidate', `${protocol} ${sdpMid} ${ip}:${port}`)
     })
     pc.addEventListener('iceconnectionstatechange', e => {
-      console.log('iceconnectionstatechange', e)
+      trace('iceconnectionstatechange', pc.iceConnectionState)
     })
     pc.addEventListener('icegatheringstatechange', e => {
-      console.log('icegatheringstatechange', e)
+      trace('icegatheringstatechange', e.target['iceGatheringState'])
     })
     pc.addEventListener('negotiationneeded', e => {
-      console.log('negotiationneeded', e)
+      trace('session negotiation')
     })
     pc.addEventListener('removestream', e => {
-      console.log('removestream', e)
+      trace('removestream', e)
     })
     pc.addEventListener('signalingstatechange', e => {
-      console.log('signalingstatechange', e)
+      trace('signalingstatechange', e.target['signalingState'])
     })
     pc.addEventListener('datachannel', e => {
-      console.log('datachannel', e)
+      trace('datachannel added to the connection')
       const dc = this.signalChannel = e['channel']
       dc.addEventListener('close', e => {
-        console.log('dc close', e)
+        trace('datachannel close')
       })
       dc.addEventListener('error', e => {
-        console.log('dc error', e)
+        trace('dc error', e)
       })
       dc.addEventListener('message', e => {
-        console.log('dc message', e)
-        this.onReceiveMessage(e['data'])        
+        trace('dc message', e)
+        this.onReceiveMessage(e['data'])
       })
       dc.addEventListener('open', e => {
-        console.log('dc open', e)
+        trace('datachannel open')
       })
     })
     pc.addEventListener('close', e => {
-      console.log('close', e)
+      trace('close', e)
     })
     pc.addEventListener('error', e => {
-      console.log('error', e)
+      trace('error', e)
     })
     pc.addEventListener('message', e => {
-      console.log('message', e)
+      trace('message', e)
     })
     pc.addEventListener('open', e => {
-      console.log('open', e)
+      trace('open', e)
     })
     pc.addEventListener('tonechange', e => {
-      console.log('tonechange', e)
+      trace('tonechange', e)
     })
     pc.addEventListener('identityresult', e => {
-      console.log('identityresult', e)
+      trace('identityresult', e)
     })
     pc.addEventListener('idpassertionerror', e => {
-      console.log('idpassertionerror', e)
+      trace('idpassertionerror', e)
     })
     pc.addEventListener('idpvalidationerror', e => {
-      console.log('idpvalidationerror', e)
+      trace('idpvalidationerror', e)
     })
     pc.addEventListener('peeridentity', e => {
-      console.log('peeridentity', e)
+      trace('peeridentity', e)
     })
     pc.addEventListener('isolationchange', e => {
-      console.log('isolationchange', e)
+      trace('isolationchange', e)
     })
     pc.addEventListener('icecandidate', e => {
       if (e.candidate) {
@@ -123,7 +129,7 @@ export class SocketService {
   addIceCandidate(candidate) {
     return this.peerConnection.addIceCandidate(candidate)
       .then(() => {
-        console.log('AddIceCandidate success.')
+        this.traceService.trace('candidate added success.')
       })
       .catch(e => {
         console.error(e.message)
@@ -151,25 +157,34 @@ export class SocketService {
     const pc = this.peerConnection
     const dc = this.signalChannel = pc.createDataChannel('signal-channel')
     dc.addEventListener('close', e => {
-      console.log('dc close', e)
+      this.traceService.trace('dc close', e)
     })
     dc.addEventListener('error', e => {
-      console.log('dc error', e)
+      this.traceService.trace('dc error', e)
     })
     dc.addEventListener('message', e => {
-      console.log('dc message', e)
+      this.traceService.trace('dc message', e)
       this.onReceiveMessage(e['data'])
     })
     dc.addEventListener('open', e => {
-      console.log('dc open', e)
+      this.traceService.trace('dc open', e)
     })
   }
   sendMessage(message: string) {
-    this.signalSource.next({ send: message })
-    this.signalChannel.send(message)
+    const wrapped = {
+      message,
+      timestamp: new Date().getTime()
+    }
+    this.signalSource.next(Object.assign({
+      type: 'send'
+    }, wrapped))
+    this.signalChannel.send(JSON.stringify(wrapped))
   }
-  onReceiveMessage(message: string) {
-    this.signalSource.next({ receive: message })
+  onReceiveMessage(data) {
+    data = JSON.parse(data)
+    this.signalSource.next(Object.assign({
+      type: 'receive'
+    }, data))
   }
   saveOffer(desc) {
     return fetch('/sdp', {

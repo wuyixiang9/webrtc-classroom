@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs/Subscription';
 
 import { MediaService } from './services/media'
 import { SocketService } from './services/socket'
+import TraceService from './services/trace'
 
 @Component({
   selector: '#root',
@@ -40,7 +41,7 @@ import { SocketService } from './services/socket'
       flex:1
     }
   `],
-  providers: [MediaService, SocketService]
+  providers: [TraceService, MediaService, SocketService]
 })
 export class AppComponent implements OnDestroy {
   title = 'webrtc classroom';
